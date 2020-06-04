@@ -4,19 +4,19 @@ function trivium_generator(key, iv){
     var B = [];
     var C = [];
 
+    var tmp1 = BigInt(key);
     for (var i = 0; i < 80; i++){
-        let tmp = BigInt(key);
-        A.unshift((tmp & 1n) == 1n);
-        tmp == tmp >> 1n;
+        A.unshift((tmp1 & 1n) == 1n);
+        tmp1 = tmp1 >> 1n;
     }
     for (var i = 0; i < 13; i++){
         A.push(false);
     }
 
+    var tmp2 = BigInt(iv);
     for (var i = 0; i < 80; i++){
-        var tmp = BigInt(iv);
-        B.unshift((tmp & 1n) == 1n);
-        tmp == tmp >> 1n;
+        B.unshift((tmp2 & 1n) == 1n);
+        tmp2 = tmp2 >> 1n;
     }
     for (var i = 0; i < 4; i++){
         B.push(false);
@@ -35,22 +35,6 @@ function trivium_generator(key, iv){
     // B: n-94
     // C: n-178
 
-    for (var i = 0; i < 1152; i++){
-        let t1 = A[65] ^ (A[90] & A[91]) ^ A[92] ^ B[77];
-        let t2 = B[68] ^ (B[81] & B[82]) ^ B[83] ^ C[86];
-        let t3 = C[65] ^ (C[108] & C[109]) ^ C[110] ^ A[68];
-
-        A.pop();
-        B.pop();
-        C.pop();
-
-        A.unshift(t1);
-        B.unshift(t2);
-        C.unshift(t3);
-    }
-
-//end of whole init
-
     this.nextBit = function(){
         let t1 = A[65] ^ A[92];
         let t2 = B[68] ^ B[83];
@@ -58,13 +42,13 @@ function trivium_generator(key, iv){
 
         let z = t1 ^ t2 ^ t3;
 
-        t1 = t1 ^ (A[90] & A[91]) ^ B[77];
-        t2 = t2 ^ (B[81] & B[82]) ^ C[86];
-        t3 = t3 ^ (C[108] & C[109]) ^ A[68];
+        t1 = t1 ^ A[90] & A[91] ^ B[77];
+        t2 = t2 ^ B[81] & B[82] ^ C[86];
+        t3 = t3 ^ C[108] & C[109] ^ A[68];
 
-        A.pop;
-        B.pop;
-        C.pop;
+        A.pop();
+        B.pop();
+        C.pop();
 
         A.unshift(t3);
         B.unshift(t1);
@@ -72,6 +56,27 @@ function trivium_generator(key, iv){
 
         return z;
     }
+
+
+    for (var i = 0; i < 1152; i++){
+
+        let t1 = A[65] ^ A[90] & A[91] ^ A[92] ^ B[77];
+        let t2 = B[68] ^ B[81] & B[82] ^ B[83] ^ C[86];
+        let t3 = C[65] ^ C[108] & C[109] ^ C[110] ^ A[68];
+
+        A.pop();
+        B.pop();
+        C.pop();
+
+        A.unshift(t3);
+        B.unshift(t1);
+        C.unshift(t2);
+    }
+
+
+//end of whole init
+
+    
 
     this.nextSeven = function(){
         let result = 0;
@@ -87,13 +92,14 @@ function base64ToBase10(str){
     let order = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
     let dec;
     let result = BigInt(0);
-    for(let i = 0; i < str.length; i++){
+    let n = str.length;
+    for(let i = 0; i < n; i++){
         dec = order.indexOf(str.charAt(0));
         if(dec == -1){
-            break
+            break;
         }
         str = str.substr(1);
-        result = result << 5n;
+        result = result << 6n;
         result += BigInt(dec);
     }
     return result;
@@ -136,7 +142,6 @@ async function getBase64(file) {
     var trivium = new trivium_generator(key,iv);
     data = atob(data);
     data = asciiToCharCodes(data);
-    //var encrypted = [];
 
     for(let i = 0; i < data.length; i++){
         data[i] = String.fromCharCode(data[i] ^ trivium.nextSeven());

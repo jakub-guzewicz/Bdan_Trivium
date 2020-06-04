@@ -15,8 +15,8 @@
 
 async function encryptFile(){
     const selectedFile = document.getElementById('inputfile').files[0];
-    const iv = document.getElementById('iv').innerHTML;
-    const key = document.getElementById('key').innerHTML;
+    const iv = document.getElementById('iv').value;
+    const key = document.getElementById('key').value;
     
     var myWorker = new Worker('trivium.js');
 
