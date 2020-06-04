@@ -114,22 +114,43 @@ function charCodesToAscii(charCodes){
     }
 }
 
-function encrypt(data, key, iv){
+async function getBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        let encoded = reader.result.toString().replace(/^data:(.*,)?/, '');
+        if ((encoded.length % 4) > 0) {
+          encoded += '='.repeat(4 - (encoded.length % 4));
+        }
+        resolve(encoded);
+      };
+      reader.onerror = error => reject(error);
+    });
+  }
 
+ function encrypt(data, key, iv){
+    
     key = base64ToBase10(key);
     iv = base64ToBase10(iv);
-
-
-    let trivium = new trivium_generator(key,iv);
-    data = window.atob(data);
+    var trivium = new trivium_generator(key,iv);
+    data = atob(data);
     data = asciiToCharCodes(data);
-    let encrypted = [];
-    for(let i = 0; i < data.length; i++){
-        encrypted[i] = String.fromCharCode(data[i] ^ trivium.nextSeven());
-    }
-    encrypted = encrypted.reverse();
-    encrypted = encrypted.join("");
-    encrypted = window.btoa(encrypted);
+    //var encrypted = [];
 
-    return encrypted;
+    for(let i = 0; i < data.length; i++){
+        data[i] = String.fromCharCode(data[i] ^ trivium.nextSeven());
+    }
+
+    data = data.reverse();
+    data = data.join("");
+    data = btoa(data);
+    return data;
+
+}
+
+onmessage = async function(e){
+    var base64content = await getBase64(e.data[0]);
+    let result = encrypt(base64content, e.data[1], e.data[2]);
+    this.postMessage(result);
 }

@@ -3,9 +3,16 @@
     <head>
         <title>Trivium in js</title>
         <meta charset="utf-8">
-        <script src="trivium.js"></script>
+        <!--<script src="trivium.js"></script>-->
+        <script src="main.js"></script>
     </head>
     <body>
         <h1>Strona testowa Trivium w js</h1>
+        <br>
+        <input id="inputfile" type="file"><br>
+        <input type="text" id="key" value="EjRWeJASNFZ4kA=="> Klucz <br> 
+        <input type="text" id="iv" value="CYdlQyEJh2VDIQ=="> IV
+        <br><br>
+        <button type="button" onclick="encryptFile()">Encrypt and download</button>
     </body>
 </html>
